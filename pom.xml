@@ -15,6 +15,7 @@
 	<description>How to integrate docker process with maven</description>
 	<properties>
 		<java.version>8</java.version>
+		<conf.file.path>../generated-resources/appassembler/jsw/simple-docker/conf</conf.file.path>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -34,11 +35,132 @@
 		</dependency>
 	</dependencies>
 
+
 	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+				<targetPath>${conf.file.path}</targetPath>
+				<includes>
+					<include>application.properties</include>
+				</includes>
+			</resource>
+		</resources>
+
 		<plugins>
+			<!--<plugin>-->
+				<!--<groupId>org.springframework.boot</groupId>-->
+				<!--<artifactId>spring-boot-maven-plugin</artifactId>-->
+			<!--</plugin>-->
 			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.3</version>
+				<configuration>
+					<descriptors>
+						<descriptor>/src/main/assembly/src.xml</descriptor>
+					</descriptors>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>install</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>appassembler-maven-plugin</artifactId>
+				<version>1.1.1</version>
+				<configuration>
+					<generateRepository>true</generateRepository>
+					<repoPath>lib</repoPath>
+					<repositoryLayout>flat</repositoryLayout>
+					<includeConfigurationDirectoryInClasspath>true</includeConfigurationDirectoryInClasspath>
+					<assembleDirectory>target/generated-resources/appassembler/jsw/simple-docker</assembleDirectory>
+					<showConsoleWindow>true</showConsoleWindow>
+					<configurationDirectory>src/main/conf</configurationDirectory>
+					<defaultJvmSettings>
+						<initialMemorySize>512M</initialMemorySize>
+						<maxMemorySize>1024M</maxMemorySize>
+					</defaultJvmSettings>
+
+					<daemons>
+						<daemon>
+							<id>simple-docker</id>
+							<mainClass>com.example.demo.DemoApplication</mainClass>
+							<platforms>
+								<platform>jsw</platform>
+							</platforms>
+							<!--<jvmSettings>-->
+							<!--<systemProperties>-->
+							<!--<systemProperty>-->
+							<!--akka.remote.netty.port=0-->
+							<!--</systemProperty>-->
+							<!--</systemProperties>-->
+							<!--</jvmSettings>-->
+							<generatorConfigurations>
+								<generatorConfiguration>
+									<generator>jsw</generator>
+									<configuration>
+										<property>
+											<name>wrapper.java.additional.1</name>
+											<value>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=localhost:5005</value>
+										</property>
+										<property>
+											<name>configuration.directory.in.classpath.first</name>
+											<value>conf</value>
+										</property>
+										<property>
+											<name>set.default.REPO_DIR</name>
+											<value>lib</value>
+										</property>
+										<property>
+											<name>wrapper.logfile</name>
+											<value>logs/wrapper.log</value>
+										</property>
+										<property>
+											<name>wrapper.java.mainclass</name>
+											<value>org.tanukisoftware.wrapper.WrapperSimpleApp</value>
+										</property>
+										<property>
+											<name>wrapper.startup.timeout</name>
+											<value>600</value>
+										</property>
+									</configuration>
+									<includes>
+										<include>linux-x86-64</include>
+										<include>windows-x86-64</include>
+									</includes>
+								</generatorConfiguration>
+							</generatorConfigurations>
+						</daemon>
+					</daemons>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>generate-daemons</goal>
+							<goal>create-repository</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.3</version>
+				<configuration>
+					<excludes>
+						<exclude>*.properties</exclude>
+						<exclude>*.yaml</exclude>
+						<exclude>*.xml</exclude>
+					</excludes>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
