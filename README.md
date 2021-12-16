@@ -1,9 +1,17 @@
+## Environment
+
+openjdk version "11.0.2"
+mysql 8
+
+
+## Build 
+mvn clean  install -Dmaven.test.skip=true
+
 ## Build image
 docker build -t simple-docker .
 
 ## Run 
-* docker run -dp 8080:8080 6835a19f45b9
-* docker run -p 8080:8080 6835a19f45b9
+* `docker run -dp 8080:8080 simple-docker:latest`
 ## Stop image
 
-docker stop 55aa6515ddac
+docker stop `container id`

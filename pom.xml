@@ -14,7 +14,7 @@
 	<name>simple-docker</name>
 	<description>How to integrate docker process with maven</description>
 	<properties>
-		<java.version>8</java.version>
+		<java.version>11</java.version>
 		<conf.file.path>../generated-resources/appassembler/jsw/simple-docker/conf</conf.file.path>
 	</properties>
 	<dependencies>
