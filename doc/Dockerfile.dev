@@ -1,0 +1,9 @@
+FROM adoptopenjdk/openjdk11:alpine-slim
+
+COPY target/cpaas-promotion-wizard/ /app
+RUN chmod 500 /app/bin/*
+WORKDIR /app/bin
+
+CMD ["sh", "cpaas-promotion-wizard", "console"]
+
+EXPOSE 10001

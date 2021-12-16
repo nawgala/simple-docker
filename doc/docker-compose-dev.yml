@@ -1,0 +1,504 @@
+version: '3.7'
+
+services:
+  cpaas_apache:
+    image: hms_cpaas/apache
+    volumes:
+      - ${APACHE_HTTPD_CONF_VOLUME}:/usr/local/apache2/conf/httpd.conf
+      - ${APACHE_MPM_CONF_VOLUME}:/usr/local/apache2/conf/extra/httpd-mpm.conf
+      - ${APACHE_SSL_CONF_VOLUME}:/usr/local/apache2/conf/extra/httpd-ssl.conf
+      - ${APACHE_LOG_VOLUME}:/hms/logs/apache
+      - ${APACHE_CERT_LOCATION}:/usr/local/apache2/conf/hms.crt
+      - ${APACHE_CERT_KEY_LOCATION}:/usr/local/apache2/conf/hms.key
+      - ${APACHE_INTERMEDIATE_CERT_LOCATION}:/usr/local/apache2/conf/ca.crt
+
+    networks:
+      cpaasmesh:
+        aliases:
+          - cpaas-apache
+    ports:
+      - 443:443
+
+  cpaas_front_envoy:
+    image: hms_cpaas/front_proxy
+    volumes:
+      - ${FRONT_PROXY_CONFIG_JSON}:/etc/front-envoy.json
+      - ${FRONT_PROXY_LOG_VOLUME}:/hms/apps/log
+    networks:
+      cpaasmesh:
+        aliases:
+          - cpaas-front-envoy
+    restart: always
+    ports:
+      - 8005:8001
+      - 8080:8080
+
+  cpaas_cassandra_n1:
+    image: cassandra:4.0
+    volumes:
+      - ${CASSANDRA_N1_DATA_VOLUME}:/var/lib/cassandra
+    ports:
+      - 7000:7000
+      - 9045:9042
+    environment:
+      HEAP_NEWSIZE: 512M
+      MAX_HEAP_SIZE: 724M
+    networks:
+      cpaasmesh:
+        aliases:
+          - cpaas-cassandra-n1
+
+
+  cpaas_keycloak:
+    image: hms_cpaas/keycloak
+    volumes:
+      - ${KEYCLOAK_LOG_VOLUME}:/hms/apps/keycloak-6.0.1/standalone/log
+      - ${KEYCLOAK_LOGIN_THEME_FILE_PATH}:/opt/jboss/keycloak/themes/talito
+    networks:
+      cpaasmesh:
+        aliases:
+          - keycloak
+    restart: always
+    ports:
+      - 9090:8080
+    environment:
+      PROXY_ADDRESS_FORWARDING: "true"
+      DB_VENDOR: MYSQL
+      DB_ADDR: cpaas_db
+      DB_PORT: 3306
+      DB_DATABASE: cpaas_keycloak
+      DB_USER: user
+      DB_PASSWORD: password
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: test123#
+    env_file:
+      - mysql_keycloak_db_connection.env
+
+  cpaas_promotion_web2:
+    image: hms_cpaas/promotion.wizard.web2:${PROMO_WEB_VERSION}
+    depends_on:
+      - cpaas_keycloak
+    volumes:
+      - ${PROMOTION_WEB2_NGINX_LOG_VOLUME}:/hms/logs/nginx/
+    networks:
+      cpaasmesh:
+        aliases:
+          - promotion-wizard-web2
+    restart: always
+    expose:
+      - "80"
+
+
+  user_management_web:
+    image: hms_cpaas/user.management.web:${USR_MGMT_WEB_VERSION}
+    depends_on:
+      - cpaas_keycloak
+    volumes:
+      - ${USER_MANAGEMENT_WEB_NGINX_LOG_VOLUME}:/hms/logs/nginx/
+    networks:
+      cpaasmesh:
+        aliases:
+          - user-management-web
+    restart: always
+    expose:
+      - "80"
+
+  cpaas_payment_web:
+    image: hms_cpaas/cpaas.payment.web:${PAYMENT_WEB_VERSION}
+    depends_on:
+      - cpaas_keycloak
+    volumes:
+      - ${CPAAS_PAYMENT_WEB_NGINX_LOG_VOLUME}:/hms/logs/nginx/
+    networks:
+      cpaasmesh:
+        aliases:
+          - cpaas-payment-web
+    restart: on-failure
+    expose:
+      - "80"
+
+  cpaas_landing_web:
+    image: hms_cpaas/cpaas.landing.page.web:${LANDING_WEB_VERSION}
+    depends_on:
+      - cpaas_keycloak
+    volumes:
+      - ${CPAAS_LANDING_WEB_NGINX_LOG_VOLUME}:/hms/logs/nginx/
+    networks:
+      cpaasmesh:
+        aliases:
+          - cpaas-landing-page-web
+    restart: on-failure
+    expose:
+      - "80"
+
+  cpaas_engagement_web:
+    image: hms_cpaas/cpaas.engagement.web:${ENGAGEMENT_WEB_VERSION}
+    depends_on:
+      - cpaas_keycloak
+    volumes:
+      - ${ENGAGEMENT_WEB_NGINX_LOG_VOLUME}:/hms/logs/nginx/
+    networks:
+      cpaasmesh:
+        aliases:
+          - cpaas-engagement-web
+    restart: always
+    expose:
+      - "80"
+
+#  cpaas_admin_dashboard_web:
+#    image: hms_cpaas/cpaas.admin.dashboard.web:${CPAAS_ADMIN_DASHBOARD_WEB_VERSION}
+#    depends_on:
+#      - cpaas_keycloak
+#    volumes:
+#      - ${CPAAS_ADMIN_DASHBOARD_WEB_NGINX_LOG_VOLUME}:/hms/logs/nginx/
+#    networks:
+#      cpaasmesh:
+#        aliases:
+#          - cpaas-admin-dashboard-web
+#    restart: always
+#    expose:
+#      - "80"
+
+  cpaas_engagement_dashboard:
+    image: hms_cpaas/cpaas.engagement.dashboard:${ENGAGEMENT_DASHBOARD_VERSION}
+    depends_on:
+      - cpaas_keycloak
+    volumes:
+      - ${ENGAGEMENT_DASHBOARD_NGINX_LOG_VOLUME}:/hms/logs/nginx/
+    networks:
+      cpaasmesh:
+        aliases:
+          - cpaas-engagement-dashboard
+    restart: always
+    expose:
+      - "80"
+
+  cpaas_api_envoy:
+    image: hms_cpaas/api_proxy
+    volumes:
+      - ${API_PROXY_CONFIG_JSON}:/etc/api-envoy.json.tmpl
+      - ${API_PROXY_LOG_VOLUME}:/hms/apps/log
+    restart: always
+    environment:
+      DOCKER_HOST: cpaas_promotion_wizard_api
+    networks:
+      cpaasmesh:
+        aliases:
+          - cpaas-api-envoy
+    expose:
+      - "8080"
+
+  cpaas_landing_page_api:
+    image: hms_cpaas/cpaas.landing.page.api:${LANDING_API_VERSION}
+    depends_on:
+      - cpaas_keycloak
+    volumes:
+      - ${LANDING_PAGE_LOG_VOLUME}:/hms/logs/cpaas/landing-page
+      -  ${SNMP_PROPERTY_FILE_VOLUME}:/hms/snmp-messages.properties
+    env_file:
+      - landing_page.env
+      - mysql_cpaas_db_connection.env
+    environment:
+      CPAAS_KEYCLOAK_HOST: ${CPAAS_KEYCLOAK_HOST}
+      CPAAS_KEYCLOAK_CLIENT_SECRET: ${CPAAS_KEYCLOAK_CLIENT_SECRET}
+    networks:
+      cpaasmesh:
+        aliases:
+          - cpaas-landing-page-api
+    restart: on-failure
+
+  cpaas_promotion_wizard_api:
+    image: hms_cpaas/promotion.wizard.api:${PROMOTION_WIZARD_API_VERSION}
+    depends_on:
+      - cpaas_keycloak
+    volumes:
+      - ${PROMOTION_WIZARD_LOG_VOLUME}:/hms/logs/cpaas/promotion-wizard
+      - ${PROMOTION_WIZARD_UPLOAD_VOLUME}:/hms/data/cpaas/upload/
+      - ${SNMP_PROPERTY_FILE_VOLUME}:/hms/snmp-messages.properties
+    env_file:
+      - promotion_wizard.env
+      - mysql_cpaas_db_connection.env
+    environment:
+      CPAAS_KEYCLOAK_HOST: ${CPAAS_KEYCLOAK_HOST}
+      CPAAS_KEYCLOAK_CLIENT_SECRET: ${CPAAS_KEYCLOAK_CLIENT_SECRET}
+    networks:
+      cpaasmesh:
+        aliases:
+          - cpaas-promotion-wizard-api
+    restart: always
+
+  cpaas_admin_dashboard_api:
+    image: hms_cpaas/cpaas.admin.dashboard.api:${CPAAS_ADMIN_DASHBOARD_API_VERSION}
+    depends_on:
+      - cpaas_keycloak
+    volumes:
+      - ${CPAAS_ADMIN_DASHBOARD_API_LOG_VOLUME}:/hms/logs/cpaas/cpaas-admin-dashboard-api
+      - ${SNMP_PROPERTY_FILE_VOLUME}:/hms/snmp-messages.properties
+    env_file:
+      - cpaas_admin_dashboard_api.env
+      - mysql_cpaas_db_connection.env
+    environment:
+      CPAAS_KEYCLOAK_HOST: ${CPAAS_KEYCLOAK_HOST}
+      CPAAS_KEYCLOAK_CLIENT_SECRET: ${CPAAS_KEYCLOAK_CLIENT_SECRET}
+    networks:
+      cpaasmesh:
+        aliases:
+          - cpaas-admin-dashboard-api
+    restart: on-failure
+
+  cpaas_mail_api:
+    image: hms_cpaas/cpaas.mail.api:${MAIL_API_VERSION}
+    depends_on:
+      - cpaas_keycloak
+    volumes:
+      - ${CPAAS_MAIL_API_LOG_VOLUME}:/hms/logs/cpaas/cpaas-mail-api
+      - ${CPAAS_MAIL_TEMPLATE_DIRECTORY}:/hms/data/cpaas/mail-templates
+      - ${SNMP_PROPERTY_FILE_VOLUME}:/hms/snmp-messages.properties
+    env_file:
+      - cpaas_mail_api.env
+      - mysql_cpaas_db_connection.env
+    environment:
+      CPAAS_KEYCLOAK_HOST: ${CPAAS_KEYCLOAK_HOST}
+      CPAAS_KEYCLOAK_CLIENT_SECRET: ${CPAAS_KEYCLOAK_CLIENT_SECRET}
+    networks:
+      cpaasmesh:
+        aliases:
+          - cpaas-mail-api
+    restart: always
+
+  cpaas_payment_api:
+    image: hms_cpaas/cpaas.payment.api:${PAYMENT_API_VERSION}
+    depends_on:
+      - cpaas_keycloak
+    volumes:
+      - ${CPAAS_PAYMENT_API_LOG_VOLUME}:/hms/logs/cpaas/cpaas-payment-api
+      - ${SNMP_PROPERTY_FILE_VOLUME}:/hms/snmp-messages.properties
+    env_file:
+      - cpaas_payment_api.env
+      - mysql_cpaas_db_connection.env
+    environment:
+      CPAAS_KEYCLOAK_HOST: ${CPAAS_KEYCLOAK_HOST}
+      CPAAS_KEYCLOAK_CLIENT_SECRET: ${CPAAS_KEYCLOAK_CLIENT_SECRET}
+    networks:
+      cpaasmesh:
+        aliases:
+          - cpaas-payment-api
+    restart: always
+
+  cpaas_user_management_api:
+    image: hms_cpaas/user.management.api:${USR_MGMT_API_VERSION}
+    depends_on:
+      - cpaas_keycloak
+    volumes:
+      - ${CPAAS_USER_MANAGEMENT_API_LOG_VOLUME}:/hms/logs/cpaas/user-management-api
+      - ${SNMP_PROPERTY_FILE_VOLUME}:/hms/snmp-messages.properties
+    env_file:
+      - user_management_api.env
+      - mysql_cpaas_db_connection.env
+    environment:
+      CPAAS_KEYCLOAK_HOST: ${CPAAS_KEYCLOAK_HOST}
+      CPAAS_KEYCLOAK_CLIENT_SECRET: ${CPAAS_KEYCLOAK_CLIENT_SECRET}
+    networks:
+      cpaasmesh:
+        aliases:
+          - cpaas-user-management-api
+    restart: always
+
+  cpaas_engagement_wizard_api:
+    image: hms_cpaas/cpaas.engagement.api:${ENGAGEMENT_API_VERSION}
+    depends_on:
+      - cpaas_keycloak
+    volumes:
+      - ${ENGAGEMENT_WIZARD_LOG_VOLUME}:/hms/logs/cpaas/engagement-wizard
+      - ${ENGAGEMENT_WIZARD_UPLOAD_VOLUME}:/hms/data/cpaas/upload/
+      - ${SNMP_PROPERTY_FILE_VOLUME}:/hms/snmp-messages.properties
+      - ${FCM_NOTIFICATION_FILE_VOLUME}:/app/conf/fcm-notification/
+    env_file:
+      - engagement_wizard.env
+      - mysql_cpaas_db_connection.env
+    environment:
+      CPAAS_KEYCLOAK_HOST: ${CPAAS_KEYCLOAK_HOST}
+      CPAAS_KEYCLOAK_CLIENT_SECRET: ${CPAAS_KEYCLOAK_CLIENT_SECRET}
+    networks:
+      cpaasmesh:
+        aliases:
+          - cpaas-engagement-wizard-api
+    restart: always
+
+  cpaas_url_tracker:
+    image: hms_cpaas/cpaas.url.tracker:${URL_TRACKER_VERSION}
+    volumes:
+      - ${URL_TRACKER_LOG_VOLUME}:/hms/logs/cpaas/url-tracker
+      - ${SNMP_PROPERTY_FILE_VOLUME}:/hms/snmp-messages.properties
+    env_file:
+      - url_tracker.env
+      - mysql_cpaas_db_connection.env
+    networks:
+      cpaasmesh:
+        aliases:
+          - cpaas-url-tracker
+    restart: always
+
+  cpaas_talito_chat_api:
+    image: hms_cpaas/cpaas.talito.chat.api:${CHAT_API_VERSION}
+    depends_on:
+      - cpaas_keycloak
+      - cpaas_engagement_wizard_api
+    volumes:
+      - ${TALITO_CHAT_API_LOG_VOLUME}:/hms/logs/cpaas/cpaas-talito-chat-api
+      - ${ENGAGEMENT_WIZARD_UPLOAD_VOLUME}:/hms/data/cpaas/upload/
+      - ${SNMP_PROPERTY_FILE_VOLUME}:/hms/snmp-messages.properties
+    env_file:
+      - talito_chat_api.env
+      - mysql_cpaas_db_connection.env
+    environment:
+      CPAAS_KEYCLOAK_HOST: ${CPAAS_KEYCLOAK_HOST}
+      CPAAS_KEYCLOAK_CLIENT_SECRET: ${CPAAS_KEYCLOAK_CLIENT_SECRET}
+    networks:
+      cpaasmesh:
+        aliases:
+          - cpaas-talito-chat-api
+    restart: always
+
+  cpaas_viber_connector_v2:
+    image: hms_cpaas/cpaas.viber.connector.v2:${VIBER_V2_CONNECTOR_VERSION}
+    volumes:
+      - ${CPAAS_VIBER_CONNECTOR_V2_LOG_VOLUME}:/hms/logs/cpaas/cpaas-viber-connector-v2
+      - ${ENGAGEMENT_WIZARD_UPLOAD_VOLUME}:/hms/data/cpaas/upload/
+      - ${SNMP_PROPERTY_FILE_VOLUME}:/hms/snmp-messages.properties
+    env_file:
+      - cpaas_viber_connector_v2.env
+      - mysql_cpaas_db_connection.env
+    networks:
+      cpaasmesh:
+        aliases:
+          - cpaas-viber-connector-v2
+    restart: on-failure
+    ports:
+      - 6897:6897
+
+  cpaas_fb_connector:
+    image: hms_cpaas/cpaas.fb.connector:${FB_CONNECTOR_VERSION}
+    volumes:
+      - ${FB_CONNECTOR_LOG_VOLUME}:/hms/logs/cpaas/fb-connector
+      - ${ENGAGEMENT_WIZARD_UPLOAD_VOLUME}:/hms/data/cpaas/upload/
+      - ${SNMP_PROPERTY_FILE_VOLUME}:/hms/snmp-messages.properties
+    env_file:
+      - fb_connector.env
+      - mysql_cpaas_db_connection.env
+    networks:
+      cpaasmesh:
+        aliases:
+          - cpaas-fb-connector
+    restart: always
+
+#  cpaas_smpp_connector:
+#    image: hms_cpaas/cpaas.smpp.connector:${SMPP_CONNECTOR_VERSION}
+#    volumes:
+#      - ${SMPP_CONNECTOR_LOG_VOLUME}:/hms/logs/cpaas/smpp-connector
+#      - ${SMPP_CONNECTOR_COMMON_CONFIG_VOLUME}:/app/conf/smpp-connection-common.properties
+#      - ${SMPP_CONNECTOR_HUTCH_CONFIG_VOLUME}:/app/conf/smpp-connection-hutch-smsc-1.properties
+#      - ${SMPP_CONNECTOR_GATEWAY_CONFIG_VOLUME}:/app/conf/smpp-gateway.properties
+#      - ${SNMP_PROPERTY_FILE_VOLUME}:/hms/snmp-messages.properties
+#    env_file:
+#      - smpp_connector.env
+#      - mysql_cpaas_db_connection.env
+#    networks:
+#      cpaasmesh:
+#        aliases:
+#          - cpaas-smpp-connector
+#    restart: on-failure
+
+  cpaas_promotion_dispatch_api:
+    image: hms_cpaas/cpaas.msg.dispatch.api:${MSG_DISPATCHER_VERSION}
+    volumes:
+      - ${PROMOTION_DISPATCH_LOG_VOLUME}:/hms/logs/cpaas/msg-dispatcher
+      - ${PROMOTION_DISPATCH_AKKA_JOURNAL_VOLUME}:/app/cpaas.msg.dispatch.api
+      - ${SNMP_PROPERTY_FILE_VOLUME}:/hms/snmp-messages.properties
+    env_file:
+      - promotion_dispatch.env
+      - mysql_cpaas_db_connection.env
+    networks:
+      cpaasmesh:
+        aliases:
+          - cpaas-promotion-dispatch-api
+    restart: always
+
+  cpaas_sms_api:
+    image: hms_cpaas/cpaas.sms.api:${CPAAS_SMS_API_VERSION}
+    volumes:
+      - ${SMS_API_LOG_VOLUME}:/hms/logs/cpaas/sms-api
+      - ${SNMP_PROPERTY_FILE_VOLUME}:/hms/snmp-messages.properties
+    env_file:
+      - sms_api.env
+      - mysql_cpaas_db_connection.env
+    networks:
+      cpaasmesh:
+        aliases:
+          - cpaas-sms-api
+    restart: always
+
+  cpaas_kecloak_connector:
+    image: hms_cpaas/cpaas.keycloak.connector:${KEYCLOAK_API_VERSION}
+    volumes:
+      - ${KEYCLOAK_CONNECTOR_LOG_VOLUME}:/hms/logs/cpaas/keycloak-connector
+      - ${SNMP_PROPERTY_FILE_VOLUME}:/hms/snmp-messages.properties
+    env_file:
+      - keycloak-connector.env
+      - mysql_cpaas_db_connection.env
+    environment:
+      CPAAS_KEYCLOAK_HOST: ${CPAAS_KEYCLOAK_HOST}
+      CPAAS_KEYCLOAK_CLIENT_SECRET: ${CPAAS_KEYCLOAK_CLIENT_SECRET}
+    networks:
+      cpaasmesh:
+        aliases:
+          - cpaas-kecloak-connector
+    restart: always
+
+  cpaas_whatsapp_connector:
+    image: hms_cpaas/cpaas.whatsapp.connector:${WHATSAPP_CONNECTOR_VERSION}
+    volumes:
+      - ${CPAAS_WHATSAPP_CONNECTOR_LOG_VOLUME}:/hms/logs/cpaas/cpaas-whatsapp-connector
+      - ${ENGAGEMENT_WIZARD_UPLOAD_VOLUME}:/hms/data/cpaas/upload/
+      - ${SNMP_PROPERTY_FILE_VOLUME}:/hms/snmp-messages.properties
+    env_file:
+      - cpaas_whatsapp_connector.env
+      - mysql_cpaas_db_connection.env
+    networks:
+      cpaasmesh:
+        aliases:
+          - cpaas-whatsapp-connector
+    restart: always
+    ports:
+      - 6826:6826
+
+  cpaas_whatsapp_gupshup_connector:
+    image: hms_cpaas/cpaas.whatsapp.gupshup.connector:${WHATSAPP_GUPSHUP_CONNECTOR_VERSION}
+    volumes:
+      - ${CPAAS_WHATSAPP_GUPSHUP_CONNECTOR_LOG_VOLUME}:/hms/logs/cpaas/whatsapp-gupshup-connector
+      - ${ENGAGEMENT_WIZARD_UPLOAD_VOLUME}:/hms/data/cpaas/upload/
+      - ${SNMP_PROPERTY_FILE_VOLUME}:/hms/snmp-messages.properties
+    env_file:
+      - gupshup_connector.env
+      - mysql_cpaas_db_connection.env
+    networks:
+      cpaasmesh:
+        aliases:
+          - cpaas-whatsapp-gupshup-connector
+    restart: always
+    ports:
+      - 6462:6462
+
+
+  cpaas_sample_site:
+    image: hms_cpaas/sample-web-site
+    volumes:
+      - /hms/logs/cpaas/sample-site:/hms/logs/nginx/
+    networks:
+      cpaasmesh:
+        aliases:
+          - cpaas-sample-web-site
+    restart: always
+
+networks:
+  cpaasmesh: {}

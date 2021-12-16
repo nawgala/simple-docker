@@ -1,0 +1,202 @@
+## ====================================================== ##
+## This is a sample .env file you need to have in your
+## docker setup. Take a copy of this file
+## and rename it as .env
+## ====================================================== ##
+
+## =========================================== ##
+## Docker image versions
+## =========================================== ##
+PROMO_WEB_VERSION=latest
+USR_MGMT_WEB_VERSION=latest
+PAYMENT_WEB_VERSION=latest
+LANDING_WEB_VERSION=latest
+ENGAGEMENT_WEB_VERSION=latest
+ENGAGEMENT_DASHBOARD_VERSION=latest
+CHAT_WEB_VERSION=latest
+LANDING_API_VERSION=latest
+PROMOTION_WIZARD_API_VERSION=latest
+MAIL_API_VERSION=latest
+CHAT_BOT_CONNECTOR_API=latest
+PAYMENT_API_VERSION=latest
+USR_MGMT_API_VERSION=latest
+ENGAGEMENT_API_VERSION=latest
+URL_TRACKER_VERSION=latest
+CHAT_API_VERSION=latest
+FB_CONNECTOR_VERSION=latest
+SMPP_CONNECTOR_VERSION=latest
+MSG_DISPATCHER_VERSION=latest
+CPAAS_SMS_API_VERSION=latest
+KEYCLOAK_API_VERSION=latest
+WHATSAPP_CONNECTOR_VERSION=latest
+VIBER_V2_CONNECTOR_VERSION=latest
+WHATSAPP_GUPSHUP_CONNECTOR_VERSION=latest
+EDNY_CONNECTOR_VERSION=latest
+CPAAS_ADMIN_DASHBOARD_API_VERSION=latest
+CPAAS_ADMIN_DASHBOARD_WEB_VERSION=latest
+
+## =========================================== ##
+## Cmd Utils
+## =========================================== ##
+CPAAS_CONFIG_FILE_LOCATION=../initial-data/cpaas-create-enterprise-config.json
+
+## =========================================== ##
+## Keycloak host and port
+## =========================================== ##
+CPAAS_KEYCLOAK_HOST=keycloak:8080
+TALITO_KEYCLOAK_HOST=https://talito-dev.hsenidmobile.com/auth/realms/cpaas
+# Keycloak client secret
+CPAAS_KEYCLOAK_CLIENT_SECRET=8877a195-719a-4bc4-a70a-dcb382b380e2
+KEYCLOAK_LOGIN_THEME_FILE_PATH= ../keycloak/themes/talito
+
+## =========================================== ##
+## Envoy proxy configurations
+## =========================================== ##
+FRONT_PROXY_CONFIG_JSON=../envoy-proxy/front-proxy/front-envoy.json
+API_PROXY_CONFIG_JSON=../envoy-proxy/api-proxy/api-envoy.json
+
+## =========================================== ##
+## Mysql configurations
+## =========================================== ##
+MYSQL_INITIAL_DATA_VOLUME=../initial-data
+MYSQL_DATA_VOLUME=/hms/data/mysql
+MYSQL_UPDATE_SCRIPTS_DATA_VOLUME=../initial-data/cpaas_platform_db/src/main/resources
+
+## =========================================== ##
+## Mysql configurations for Flyway DB migration
+## =========================================== ##
+CPAAS_MYSQL_DB_CONNECTION_URL=jdbc:mysql://cpaas_db:3306/cpaas_platform_db?useSSL=false&autoReconnect=true&useUnicode=true&character_set_server=utf8m&allowPublicKeyRetrieval=true
+CPAAS_MYSQL_DB_USER=user
+CPAAS_MYSQL_DB_PWD=password
+FLYWAY_DB_MIGRATION_SCHEMA=cpaas_platform_db
+
+## =========================================== ##
+## Log volume locations
+## =========================================== ##
+FRONT_PROXY_LOG_VOLUME=/hms/logs/cpaas/front_proxy
+API_PROXY_LOG_VOLUME=/hms/logs/cpaas/api_proxy
+KEYCLOAK_LOG_VOLUME=/hms/logs/cpaas/keycloak
+PROMOTION_WEB2_NGINX_LOG_VOLUME=/hms/logs/cpaas/promotion-web2
+ENGAGEMENT_WEB_NGINX_LOG_VOLUME=/hms/logs/cpaas/engagement-web
+QUICK_PROMOTION_WEB_NGINX_LOG_VOLUME=/hms/logs/cpaas/nginx/quick-promotion-web
+TALITO_CHAT_WEB_NGINX_LOG_VOLUME=/hms/logs/cpaas/talito-chat-web
+PROMOTION_WIZARD_LOG_VOLUME=/hms/logs/cpaas/promotion-wizard
+ENGAGEMENT_WIZARD_LOG_VOLUME=/hms/logs/cpaas/engagement-wizard
+TALITO_CHAT_API_LOG_VOLUME=/hms/logs/cpaas/cpaas-talito-chat-api
+VIBER_CONNECTOR_LOG_VOLUME=/hms/logs/cpaas/viber-connector
+AMAZON_SMS_CONNECTOR_LOG_VOLUME=/hms/logs/cpaas/amazon-sms-connector
+FB_CONNECTOR_LOG_VOLUME=/hms/logs/cpaas/fb-connector
+CPAAS_WHATSAPP_CONNECTOR_LOG_VOLUME=/hms/logs/cpaas/cpaas-whatsapp-connector
+BEYONDM_SMS_CONNECTOR_LOG_VOLUME=/hms/logs/cpaas/beyondm-sms-connector
+URL_TRACKER_LOG_VOLUME=/hms/logs/cpaas/url-tracker
+KEYCLOAK_CONNECTOR_LOG_VOLUME=/hms/logs/cpaas/keycloak-connector
+TALITO_MEETINS_API_LOG_VOLUME=/hms/logs/cpaas/talito-meetings-api
+TALITO_MEETINS_WEB_LOG_VOLUME=/hms/logs/cpaas/talito-meetings-web
+USER_MANAGEMENT_WEB_NGINX_LOG_VOLUME=/hms/logs/cpaas/user-management-web
+CPAAS_USER_MANAGEMENT_API_LOG_VOLUME=/hms/logs/cpaas/user-management-api
+CPAAS_MAIL_API_LOG_VOLUME=/hms/logs/cpaas/cpaas-mail-api
+PROMOTION_DISPATCH_LOG_VOLUME=/hms/logs/cpaas/msg-dispatcher
+PROMO_IMAGE_NGINX_LOG_VOLUME=/hms/logs/cpaas/promocdn
+CPAAS_PAYMENT_API_LOG_VOLUME=/hms/logs/cpaas/cpaas-payment-api
+CPAAS_PAYMENT_WEB_NGINX_LOG_VOLUME=/hms/logs/cpaas/cpaas-payment-web
+TALITO_MEETINS_API_LOG_VOLUME=/hms/logs/cpaas/talito-meetings-api
+TALITO_MEETINS_WEB_LOG_VOLUME=/hms/logs/cpaas/talito-meetings-web
+VOXEET_WEB_NGINX_LOG_VOLUME=/hms/logs/cpaas/voxeet
+SMPP_CONNECTOR_LOG_VOLUME=/hms/logs/cpaas/smpp-connector
+CPAAS_CHAT_BOT_CONNECTOR_LOG_VOLUME=/hms/logs/cpaas/chat-bot-connector
+LANDING_PAGE_LOG_VOLUME=/hms/logs/cpaas/landing-page
+CPAAS_LANDING_WEB_NGINX_LOG_VOLUME=/hms/logs/cpaas/landing-page-web
+CPAAS_ADMIN_DASHBOARD_WEB_NGINX_LOG_VOLUME=/hms/logs/cpaas/cpaas-admin-dashboard-web
+CPAAS_ADMIN_DASHBOARD_API_LOG_VOLUME=/hms/logs/cpaas/cpaas-admin-dashboard-api
+ENGAGEMENT_DASHBOARD_NGINX_LOG_VOLUME=/hms/logs/cpaas/cpaas-engagement-dashboard
+SMS_API_LOG_VOLUME=/hms/logs/cpaas/sms-api
+CPAAS_VIBER_CONNECTOR_V2_LOG_VOLUME=/hms/logs/cpaas/cpaas-viber-connector-v2
+CPAAS_WHATSAPP_GUPSHUP_CONNECTOR_LOG_VOLUME=/hms/logs/cpaas/whatsapp-gupshup-connector
+CPAAS_EDNY_CONNECTOR_LOG_VOLUME=/hms/logs/cpaas/edna-connector
+
+
+## =========================================== ##
+## Promotion wizard configurations
+## =========================================== ##
+PROMOTION_WIZARD_UPLOAD_VOLUME=/hms/data/cpaas/upload/
+
+## =========================================== ##
+## Engagement wizard configurations
+## =========================================== ##
+ENGAGEMENT_WIZARD_UPLOAD_VOLUME=/hms/data/cpaas/upload/
+FCM_NOTIFICATION_FILE_VOLUME= ../fcm-notification/
+
+## =========================================== ##
+## Email Sender configurations
+## =========================================== ##
+## Email template directory
+CPAAS_MAIL_TEMPLATE_DIRECTORY=../mail-templates
+
+
+## =========================================== ##
+## Message dispatcher configurations
+## =========================================== ##
+## Promotion Dispatcher Akka Journal directory
+PROMOTION_DISPATCH_AKKA_JOURNAL_VOLUME=/hms/data/cpaas/msg-dispatcher
+PROMOTION_DISPATCH_AKKA_CONF_VOLUME=../msg-dispatcher/application_cassandra.conf
+
+## =========================================== ##
+## SMPP connector configurations
+## =========================================== ##
+SMPP_CONNECTOR_COMMON_CONFIG_VOLUME=../smpp/smpp-connection-common.properties
+SMPP_CONNECTOR_HUTCH_CONFIG_VOLUME=../smpp/smpp-connection-hutch-smsc-1.properties
+SMPP_CONNECTOR_GATEWAY_CONFIG_VOLUME=../smpp/smpp-gateway.properties
+
+
+## =========================================== ##
+## Promotion image CDN configurations
+## =========================================== ##
+PROMO_IMAGE_UPLOAD_VOLUME=/hms/data/cpaas/upload/images
+PROMO_IMAGE_NGINX_CONF=../promo-image-cdn/promotion_image_cdn_nginx.conf
+SAMPLE_MOBILE_AUDIENCE_FILE_LOCATION=../sample-data/ui-sample-content/simp_aud_mobile_number.csv
+SAMPLE_CUSTOMIZED_AUDIENCE_FILE_LOCATION=../sample-data/ui-sample-content/simp_aud_customized.csv
+WEB_APP_STATIC_RESOURCES_VOLUME=../static-resources
+
+CHAT_POPUP_JS_FILE_LOCATION=../sample-web-site-dev/chat-popup.js
+CHAT_POPUP_CSS_FILE_LOCATION=../sample-web-site-dev/chat-popup.css
+
+CPAAS_WHATSAPP_CONNECTOR_IMG_UPLOAD_LOCATION=/hms/data/cpaas/upload/images
+
+FCM_SERVICE_WORKER_FILE_LOCATION=../fcm-notification/firebase-messaging-sw.js
+
+## =========================================== ##
+## Apache Server configurations
+## =========================================== ##
+APACHE_HTTPD_CONF_VOLUME=../apache/httpd.conf
+APACHE_MPM_CONF_VOLUME=../apache/httpd-mpm.conf
+APACHE_SSL_CONF_VOLUME=../apache/httpd-ssl.conf
+APACHE_LOG_VOLUME=/hms/logs/cpaas/apache
+APACHE_CERT_LOCATION=../apache/hms-ecpaas-com.crt
+APACHE_CERT_KEY_LOCATION=../apache/hms-ecpaas-com.key
+APACHE_INTERMEDIATE_CERT_LOCATION=../apache/ca.crt
+
+
+## =========================================== ##
+## Scylladb Data volumes
+## =========================================== ##
+SCYLLADB_INSTANCE_1_DATA_VOLUME=/hms/data/cpaaas/scylladb/1
+SCYLLADB_INSTANCE_2_DATA_VOLUME=/hms/data/cpaaas/scylladb/2
+SCYLLADB_INSTANCE_3_DATA_VOLUME=/hms/data/cpaaas/scylladb/3
+
+# SNMP Configuration file
+SNMP_PROPERTY_FILE_VOLUME=./snmp-messages.properties
+
+## =========================================== ##
+## Monitoring volumes
+## =========================================== ##
+PROMETHEUS_CONFIG_VOLUME=../prometheus
+GRAFANA_CONFIG_VOLUME=../prometheus/grafana-config.ini
+PROMETHEUS_DATA_VOLUME=/hms/data/cpaas/prometheus
+GRAFANA_DATA_VOLUME=/hms/data/cpaas/grafana
+GRAFANA_LOGS_VOLUME=/hms/logs/cpaas/grafana
+
+
+## =========================================== ##
+## Cassandra Data volumes
+## =========================================== ##
+CASSANDRA_N1_DATA_VOLUME=/hms/data/cpaaas/cassandra/1
