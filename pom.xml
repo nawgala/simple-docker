@@ -14,7 +14,7 @@
 	<name>simple-docker</name>
 	<description>How to integrate docker process with maven</description>
 	<properties>
-		<java.version>11</java.version>
+		<java.version>8</java.version>
 		<conf.file.path>../generated-resources/appassembler/jsw/simple-docker/conf</conf.file.path>
 	</properties>
 	<dependencies>
@@ -56,9 +56,8 @@
 			<resource>
 				<directory>src/main/resources</directory>
 				<filtering>true</filtering>
-				<targetPath>${conf.file.path}</targetPath>
 				<includes>
-					<include>application.properties</include>
+					<include>*.properties</include>
 				</includes>
 			</resource>
 		</resources>
@@ -68,6 +67,19 @@
 				<!--<groupId>org.springframework.boot</groupId>-->
 				<!--<artifactId>spring-boot-maven-plugin</artifactId>-->
 			<!--</plugin>-->
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.3</version>
+				<configuration>
+					<excludes>
+						<exclude>*.properties</exclude>
+						<exclude>*.yaml</exclude>
+						<exclude>*.xml</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>2.3</version>
@@ -165,18 +177,7 @@
 				</executions>
 			</plugin>
 
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.3</version>
-				<configuration>
-					<excludes>
-						<exclude>*.properties</exclude>
-						<exclude>*.yaml</exclude>
-						<exclude>*.xml</exclude>
-					</excludes>
-				</configuration>
-			</plugin>
+
 		</plugins>
 	</build>
 
