@@ -17,6 +17,27 @@
 		<java.version>8</java.version>
 		<conf.file.path>../generated-resources/appassembler/jsw/simple-docker/conf</conf.file.path>
 	</properties>
+
+	<profiles>
+
+		<profile>
+			<id>dev</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<project.profile.id>dev</project.profile.id>
+				<MYSQL_HOST>172.19.0.2</MYSQL_HOST>
+			</properties>
+		</profile>
+		<profile>
+			<id>docker</id>
+			<properties>
+				<project.profile.id>docker</project.profile.id>
+				<MYSQL_HOST>simple-app-db</MYSQL_HOST>
+			</properties>
+		</profile>
+	</profiles>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -57,7 +78,7 @@
 				<directory>src/main/resources</directory>
 				<filtering>true</filtering>
 				<includes>
-					<include>*.properties</include>
+					<include>application*.properties</include>
 				</includes>
 			</resource>
 		</resources>
