@@ -25,9 +25,9 @@ create network
 
 ### create DB
 
-`create database customer_data;`
-`create user 'user'@'%' identified by 'password';`
-`grant all on *.* to 'user'@'%';`
+`create database customer_data;
+ create user 'user'@'%' identified by 'password';
+ grant all on *.* to 'user'@'%';`
 
 
 ### Create table
@@ -60,3 +60,33 @@ attached mode
 
 docker stop `container id`
 
+
+### Without creating Network
+
+you can start application even without creating network. You have add a `--link` option with `docker run` command. This add a entry into the /etc/hosts with the `ip` and `name` of container it try to connect to. This is deprecated methor. So, it can be removed this support in the future
+
+
+##### Start db
+
+`docker run --name simple-app-db -e MYSQL_ROOT_PASSWORD=password -p  3306:3306 -d mysql:latest` 
+
+
+##### Connecting DB
+
+docker run -it --link simple-app-db:simple-app-db --rm mysql mysql -hsimple-app-db -uroot -p
+
+
+##### Preparing DB
+
+`create user 'user'@'%' identified by 'password';`
+
+`create user 'user'@'%' identified by 'password';`
+
+`grant all on *.* to 'user'@'%';`
+
+
+#### Run application
+
+`docker build -t simple-docker-app .`
+
+`docker run -tip 8080:8080 --link simple-app-db:simple-app-db simple-docker-app:latest`
