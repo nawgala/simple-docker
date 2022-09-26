@@ -9,7 +9,7 @@
 
 ## Prepare Mysql
 ### Start Mysql 
-start latest version of mysql , map container port 3306 into host port 3306 , use password as password for root user and name the docker container as  simple-app-d
+start latest version of mysql , map container port `3306` into host port `3306` , use password as `password` for root user and name the docker container as  `simple-app-db`
 we need to create network.Docker's built-in DNS does not apply on the default bridge network -- it has to be a custom/user-created network for Docker to provide DNS resolution of containers. 
 
 create network
@@ -42,17 +42,17 @@ create network
 `mvn clean  install -Dmaven.test.skip=true -Pdocker`
 
 ## Build image
-Build  the docker image and tag it as 'simple-docker-app'
+Build  the docker image and tag it as `simple-docker-app`
 
 `docker build -t simple-docker-app .`
 
-## Run 
+## How to Run 
 Run the docker image , simple-docker-app
 
 
 `docker run  -dp 8080:8080 --network mysql-net   simple-docker-app:latest`
 
-attached mode 
+attached and interactive mode
 
 `docker run  -tip 8080:8080 --network mysql-net   simple-docker-app:latest`
 
@@ -62,7 +62,7 @@ attached mode
 docker stop `container id`
 
 
-### Without creating Network
+### How to run without creating Network
 
 you can start application even without creating network. You have add a `--link` option with `docker run` command. This add a entry into the /etc/hosts with the `ip` and `name` of container it try to connect to. This is deprecated methor. So, it can be removed this support in the future
 
@@ -94,6 +94,11 @@ you can start application even without creating network. You have add a `--link`
 
 ##Application run with compose
 
+Part of docker-compose’s default behavior these days is to automatically create a network for the containers to run on, and it gives each container a hostname identical to its container name
+
+
+  By default Compose sets up a single network for your app. Each container for a service joins the default network and is both reachable by other containers on that network, and discoverable by them at a hostname identical to the container name.
+    https://docs.docker.com/compose/networking/
 
 * build the application with profile, `docker`
 
@@ -108,3 +113,11 @@ you can start application even without creating network. You have add a `--link`
 `cd app`
 
 `docker-compose up`
+
+* verify end point `http://localhost:8080/customer/create` with   `POST' with body 
+
+    
+    Content-Type:application/json
+    {"firstName": "sampath", "lastName": "Nawgala"}
+    
+  
