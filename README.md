@@ -15,7 +15,7 @@ we need to create network.Docker's built-in DNS does not apply on the default br
 create network
 `docker network create mysql-net`
 
-`docker run --name simple-app-db --network mysql-net -e MYSQL_ROOT_PASSWORD=password -p  3306:3306 -d mysql:latest`
+`docker run --name  simple-app-db --rm --network mysql-net -v mysql-data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=password -e MYSQL_DATABASE=customer_data -p  3306:3306 -it mysql:latest`
 
 
 ### Connect to MySQL from the MySQL command line client
@@ -31,14 +31,15 @@ create network
 
 
 ### Create table
-CREATE TABLE `customer` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `firstName` varchar(45) NOT NULL,
-  `lastName` varchar(45) NOT NULL,
+
+`CREATE TABLE customer (
+  id int(11) NOT NULL AUTO_INCREMENT,
+  firstName varchar(45) NOT NULL,
+  lastName varchar(45) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;`
 ## Build 
-mvn clean  install -Dmaven.test.skip=true
+`mvn clean  install -Dmaven.test.skip=true -Pdocker`
 
 ## Build image
 Build  the docker image and tag it as 'simple-docker-app'
@@ -73,12 +74,10 @@ you can start application even without creating network. You have add a `--link`
 
 ##### Connecting DB
 
-docker run -it --link simple-app-db:simple-app-db --rm mysql mysql -hsimple-app-db -uroot -p
+`docker run -it --link simple-app-db:simple-app-db --rm mysql mysql -hsimple-app-db -uroot -p` 
 
 
 ##### Preparing DB
-
-`create user 'user'@'%' identified by 'password';`
 
 `create user 'user'@'%' identified by 'password';`
 
@@ -90,3 +89,22 @@ docker run -it --link simple-app-db:simple-app-db --rm mysql mysql -hsimple-app-
 `docker build -t simple-docker-app .`
 
 `docker run -tip 8080:8080 --link simple-app-db:simple-app-db simple-docker-app:latest`
+
+
+
+##Application run with compose
+
+
+* build the application with profile, `docker`
+
+`mvn clean  install -Dmaven.test.skip=true -Pdocker`
+
+* build the image
+
+`docker build -t simple-docker-app .`
+
+* run docker compose
+
+`cd app`
+
+`docker-compose up`
