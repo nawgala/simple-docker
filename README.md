@@ -9,7 +9,8 @@
    - https://dev.to/scottshipp/docker-compose-a-spring-boot-app-backed-by-mysql-89m
    - https://www.baeldung.com/ops/docker-mysql-container
  - https://vsupalov.com/6-docker-basics/
-  
+ - https://stackoverflow.com/questions/23544282/what-is-the-best-way-to-manage-permissions-for-docker-shared-volumes 
+ 
 
 ## Prepare Mysql
 ### Start Mysql 
