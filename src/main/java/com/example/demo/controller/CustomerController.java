@@ -23,7 +23,7 @@ public class CustomerController {
         final Customer saved;
         try {
             saved = customerRepository.save(customer);
-            logger.info("Customer created successfully", customer);
+            logger.info("Customer created successfully [{}]", saved);
             return saved;
         } catch (Exception e) {
             logger.error("Error while creating customer", e);

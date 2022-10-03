@@ -5,7 +5,11 @@
 * Maven 3.5+
 
 
-
+   Reference:
+   - https://dev.to/scottshipp/docker-compose-a-spring-boot-app-backed-by-mysql-89m
+   - https://www.baeldung.com/ops/docker-mysql-container
+ - https://vsupalov.com/6-docker-basics/
+  
 
 ## Prepare Mysql
 ### Start Mysql 
@@ -104,15 +108,14 @@ Part of docker-compose’s default behavior these days is to automatically creat
 
 `mvn clean  install -Dmaven.test.skip=true -Pdocker`
 
-* build the image
 
-`docker build -t simple-docker-app .`
-
-* run docker compose
+* Build & up using docker compose,Remove all the stopped containers 
 
 `cd app`
 
-`docker-compose up`
+`docker system prune`
+
+`docker-compose up --build` 
 
 * verify end point `http://localhost:8080/customer/create` with   `POST' with body 
 
@@ -121,3 +124,8 @@ Part of docker-compose’s default behavior these days is to automatically creat
     {"firstName": "sampath", "lastName": "Nawgala"}
     
   
+#### Todo
+
+* configure log4j2/logback OK
+* volume mapping for db OK
+* initialisation script OK

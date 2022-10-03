@@ -1,18 +1,22 @@
-version: '3'
+version: '3.9'
 services:
 
   simple-app-db:
-    image: mysql
-    environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+#    image: app_simple-app-db
+    build:
+      context: .
+      args:
+        - MYSQL_ROOT_PASSWORD={MYSQL_ROOT_PASSWORD}
+        - MYSQL_DATABASE=${MYSQL_DATABASE}
+        - MYSQL_USER=${MYSQL_USER}
+        - MYSQL_PASSWORD=${MYSQL_PASSWORD}
     ports:
-      - 3306:3306
+      - "${MYSQL_PORT}:3306"
 
   myapp-main:
-    image: simple-docker-app
+#    image: simple-docker-app
+    build:
+      context: ..
     restart: on-failure
     depends_on:
       - simple-app-db
@@ -23,4 +27,7 @@ services:
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - DATABASE_PORT=${DATABASE_PORT}
+
+    volumes:
+      - /home/sampath/Projects/rnd/simple-docker/app/logs:/app/logs
+
