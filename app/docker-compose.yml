@@ -30,5 +30,5 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
 
     volumes:
-      - /home/sampath/Projects/rnd/simple-docker/app/logs:/app/logs
+      - ${PWD}/logs:/app/logs
 
